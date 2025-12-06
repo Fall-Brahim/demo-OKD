@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Démo Cloud OKD - Proxmox</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            animation: fadeInDown 1s ease;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .form-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1em;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        button {
+            background: linear-gradient(135deg, #00ff88, #00d4ff);
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,255,136,0.4);
+        }
+
+        .visitors-list {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .visitor-card {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .visitor-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .visitor-date {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>☁️ Cloud Privé OKD + PostgreSQL</h1>
+            <p style="font-size: 1.2em; opacity: 0.9;">Déployé sur Proxmox | Django 4.2</p>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Base de données connectée</span>
+            </div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">{{ total_visitors }}</div>
+                <div>Visiteurs enregistrés</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">🐘</div>
+                <div>PostgreSQL</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">🐍</div>
+                <div>Django 4.2</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">☸️</div>
+                <div>OKD/OpenShift</div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <h2 style="margin-bottom: 20px; text-align: center;">📝 Laisser une trace</h2>
+            <p style="text-align: center; opacity: 0.9; margin-bottom: 30px;">
+                Testez la connexion à la base de données PostgreSQL
+            </p>
+
+            <form id="visitorForm">
+                <div class="form-group">
+                    <label for="name">Nom *</label>
+                    <input type="text" id="name" name="name" required placeholder="Votre nom">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="votre@email.com (optionnel)">
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Laissez un message..."></textarea>
+                </div>
+
+                <button type="submit">💾 Enregistrer dans PostgreSQL</button>
+            </form>
+
+            <div id="successMessage" class="success-message">
+                ✅ Données enregistrées avec succès dans PostgreSQL !
+            </div>
+        </div>
+
+        <div class="visitors-list">
+            <h2 style="margin-bottom: 20px;">👥 Derniers visiteurs (Base de données en temps réel)</h2>
+            
+            {% if visitors %}
+                {% for visitor in visitors %}
+                <div class="visitor-card">
+                    <div class="visitor-name">{{ visitor.name }}</div>
+                    {% if visitor.email %}
+                    <div style="opacity: 0.8;">📧 {{ visitor.email }}</div>
+                    {% endif %}
+                    {% if visitor.message %}
+                    <div style="margin-top: 8px;">💬 {{ visitor.message }}</div>
+                    {% endif %}
+                    <div class="visitor-date">🕐 {{ visitor.visited_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; opacity: 0.8;">Aucun visiteur pour le moment. Soyez le premier !</p>
+            {% endif %}
+        </div>
+
+        <footer style="text-align: center; padding: 40px 20px; opacity: 0.8;">
+            <p><strong>Infrastructure Cloud Privée</strong></p>
+            <p style="margin-top: 10px;">Proxmox VE + OKD + PostgreSQL + Django</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('visitorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const response = await fetch('/api/visitor/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('visitorForm').reset();
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'enregistrement');
+            }
+        });
+    </script>
+</body>
+</html>
