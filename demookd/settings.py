@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-74*hl+qbm)%slvql5n9z09ssadi%tp+o9$5f7fa$f!%^pc61sh'
+# SECRET_KEY = 'django-insecure-74*hl+qbm)%slvql5n9z09ssadi%tp+o9$5f7fa$f!%^pc61sh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
